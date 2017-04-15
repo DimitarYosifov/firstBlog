@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+    <style>
+        #menu {
+            background: #DDD;
+            text-align: center;
+            padding: 5px;
+            line-height: 1.5;
+            border-radius: 3px;
+            overflow: auto;
+        }
+
+        #menu > #loggedInUser {
+            float: right;
+            margin-right: 10px;
+        }
+
+        #menu a {
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        a {
+            text-decoration: none;
+            padding-right: 10px;
+        }
+
+        #menu a:hover {
+            background: #BBB;
+        }
+
+        main > section {
+            /*display: none;*/
+            padding: 20px 5px;
+        }
+
+        section h1 {
+            margin: 10px 0px;
+            font-size: 1.2em;
+        }
+
+        table th {
+            background: #DDD;
+            padding: 10px;
+        }
+
+        table td {
+            padding: 5px 10px;
+            background: #EEE;
+        }
+
+        #infoBox, #errorBox, #loadingBox {
+            display: none;
+            width: 80%;
+            margin: 10px auto;
+            color: white;
+            text-align: center;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        #loadingBox {
+            background: #7CB3E9;
+        }
+
+        #infoBox {
+            background: #393;
+        }
+
+        #errorBox {
+            background: #F50;
+        }
+
+        footer {
+            background: #DDD;
+            padding: 5px 10px;
+            font-size: 0.8em;
+            text-align: center;
+            border-radius: 3px;
+        }
+
+        #textAuthor, #textDescription {
+            margin-bottom: 10px;
+            background-color: white;
+        }
+
+        td a:hover {
+            color: red;
+        }
+        #loggedInUser{
+            max-width:100%;
+            max-height:100%;
+        }
+    </style>
+
+</head>
+<body onload="start()">
+<header id="menu">
+    <a href="#" id="linkHome">Home</a>
+    <a href="#" id="linkLogin">Login</a>
+    <a href="#" id="linkRegister">Register</a>
+    <a href="#" id="linkListBooks">List Books</a>
+    <a href="#" id="linkCreateBook">Create Book</a>
+    <a href="#" id="linkLogout">Logout</a>
+    <span id="loggedInUser"  ></span>
+</header>
+<section id="loadingBox">Loading ...</section>
+<section id="infoBox">Info</section>
+<section id="errorBox">Error</section>
+
+<section id="viewHome">
+    <h1>Welcome</h1>
+    Welcome to our book library.
+</section>
+
+
+<main>
+    <section id="viewLogin">
+        <h1>Please login</h1>
+        <form id="formLogin">
+            <div>Username:</div>
+            <div><input type="text" name=
+                    "username" required/></div>
+            <div>Password:</div>
+            <div><input type="password"
+                        name="passwd" required/></div>
+            <div><input type="submit" value="Login" id="buttonLoginUser"/></div>
+        </form>
+    </section>
+
+    <section id="viewRegister">
+        <h1>Please register here</h1>
+        <form id="formRegister">
+            <div>Username:</div>
+            <div><input type="text" name=   "username" required/></div>
+            <div>Password:</div>
+            <div><input type="password" name="passwd" required/></div>
+            <div>Picture URL:</div>
+            <div><input type="text" name="image" required /></div>
+
+            <div><input type="submit" value="Register" id="buttonRegisterUser"/></div>
+        </form>
+    </section>
+
+    <section id="viewBooks">
+        <h1>Books</h1>
+        <div id="books">
+            <table>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+                <tr>
+                    <td>Book title</td>
+                    <td>Book author</td>
+                    <td>Book description</td>
+                    <td>
+                        <a href="#">[Delete]</a>
+                        <a href="#">[Edit]</a>
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+    </section>
+
+    <section id="viewCreateBook">
+        <h1>Create new book</h1>
+        <form id="formCreateBook">
+            <div>Title:</div>
+            <div><input type="text" name="title" required/></div>
+            <div>Author:</div>
+            <div><input type="text" name="author" required/></div>
+            <div>Price:</div>
+            <div><input type="text" name="price" required/>lv.</div>
+            <div>Description:</div>
+            <div><textarea name="descr" rows="10" required></textarea></div>
+            <div><input type="submit" value="Create" id="buttonCreateBook"/></div>
+
+        </form>
+    </section>
+
+    <section id="viewEditBook">
+        <h1>Edit existing book</h1>
+        <form id="formEditBook">
+            <div><input type="hidden" name="id" required/></div>
+            <div>Title:</div>
+            <div><input type="text" name="title" required/></div>
+            <div>Author:</div>
+            <div><input type="text" name="author" required/></div>
+            <div>Price:</div>
+            <div><input type="text" name="price"/>lv.</div>
+            <div>Description:</div>
+            <div><textarea name="descr" rows="10"required></textarea></div>
+            <div><input type=submit value="Edit" id="buttonEditBook"/></div>
+        </form>
+    </section>
+
+    <section id="showSelected">
+        <h3></h3>
+        <div><input type="text" id="textAuthor" disabled></div>
+        <div><textarea id="textDescription" rows="10" disabled></textarea></div>
+
+
+    </section>
+
+</main>
+
+<footer>Book Library - Simple SPA Application</footer>
+
+
+<script>
+    function start() {
+
+        sessionStorage.clear(); // Clear user auth data
+        const kinveyBaseUrl = "https://baas.kinvey.com/";
+        const kinveyAppKey = "kid_HkGYRtH7x";
+        const kinveyAppSecret =
+                "0aeea03501304ac3916d0b548db494e2";
+        const kinveyAppAuthHeaders = {
+            'Authorization': "Basic " +
+            btoa(kinveyAppKey + ":" + kinveyAppSecret),
+        };
+
+        showHideMenuLinks();
+        showView('viewHome');
+        // Bind the navigation menu links
+        $("#linkHome").click(showHomeView);
+        // Bind the form submit actions
+        $("#formLogin").submit(loginUser);
+
+        function showHideMenuLinks() {
+            $("#menu a").hide();
+            if (sessionStorage.getItem("authToken")) {
+                //logged in user
+                $("#linkHome").show();
+                $("#linkListBooks").show();
+                $("#linkCreateBook").show();
+                $("#linkLogout").show();
+            }
+            else {
+                //no user logged
+                $("#linkHome").show();
+                $("#linkLogin").show();
+                $("#linkRegister").show();
+            }
+        }
+
+        function showView(viewName) {
+            // Hide all views and show the selected view only
+            $('main > section').hide();
+            $('#' + viewName).show();
+        }
+
+        function showHomeView() {
+            showView("viewHome")
+        }
+
+        function loginUser() {
+            let userData = {
+                username: $('#formLogin input[name=username]').val(),
+                password: $('#formLogin input[name=passwd]').val()
+            };
+            if (userData.username !== "" && userData.password !== "") {
+                $.ajax({
+                    method: "POST",
+                    url: kinveyBaseUrl + "user/" + kinveyAppKey + "/login",
+                    headers: kinveyAppAuthHeaders,
+                    data: userData,
+                    success: loginSuccess,
+                    error: handleAjaxError
+                });
+            } else {
+                showError("Username AND Password should be filled")
+            }
+
+            function loginSuccess(userInfo) {
+
+                saveAuthInSession(userInfo);
+                showHideMenuLinks();
+                listBooks();
+                showInfo('login successful.');
+            }
+        }
+
+        function showLoginView() {
+            showView("viewLogin");
+            $('#formLogin').trigger('reset');
+        }
+
+        function showRegisterView() {
+
+            $('#formRegister').trigger('reset');
+            showView('viewRegister');
+        }
+
+        function getKinveyUserAuthHeaders() {
+            return {
+                'Authorization': "Kinvey " +
+                sessionStorage.getItem('authToken'),
+            };
+        }
+
+        function listBooks() {
+            $('#books').empty();
+            showView('viewBooks');
+            $.ajax({
+                method: "GET",
+                url: kinveyBaseUrl + "appdata/" + kinveyAppKey + "/books",
+                headers: getKinveyUserAuthHeaders(),
+                success: loadBooksSuccess,
+                error: handleAjaxError
+            });
+
+            function loadBooksSuccess(books) {
+
+                $('#books').empty();
+                showInfo('Books loaded.');
+                if (books.length == 0) {
+                    $('#books').text('No books in the library.');
+                } else {
+                    let table = $(`
+                             <table>
+                                   <tr>
+                                      <th>Title</th>
+                                      <th>Author</th>
+                                      <th>Description</th>
+                                      <th>Price</th>
+                                      <th>Actions</th>
+                                   </tr>
+                             </table>`);
+                    for (let book of books) {
+                        let tr = $("<tr>");
+                        displayTableRow(tr, book);
+                        table.append(tr);
+                    }
+                    $('#books').append(table);//
+                }
+            }
+
+            function displayTableRow(tr, book) {
+
+                let links = [$("<a href='#'>more</a>")
+                        .click(function () {
+                            showMoreOfSelected(book)
+                        }), " "];
+                if (book._acl.creator == sessionStorage.getItem("userId")) {
+
+                    let deleteLink = $("<a href='#'>delete</a>")
+                            .click(function () {
+                                let x;
+                                if (confirm("are you sure you want to delete this?") == true) {
+                                    deleteBookById(book._id)
+                                }
+
+
+                            });
+                    let editLink = $("<a href='#'>edit</a>")
+                            .click(function () {
+                                loadBookForEdit(book._id)
+                            });
+                    links.push(deleteLink);
+                    links.push(" ");
+                    links.push(editLink);
+                }
+
+                tr.append(
+                        $("<td>").text(book.book),
+                        $("<td>").text(book.author),
+                        $("<td>").text(book.description),
+                        $("<td>").text(book.price),
+                        $("<td>").append(links)
+                )
+            }
+        }
+
+        function showMoreOfSelected(book) {
+            $("#showSelected h3").text(book.book)
+            $("#textAuthor").val(book.author)
+            $("#textDescription").text(book.description)
+            showView('showSelected');
+
+        }
+
+        function deleteBookById(bookId) {
+            $.ajax({
+                method: "DELETE",
+                url: kinveyBaseUrl + "appdata/" + kinveyAppKey + "/books/" + bookId,
+                headers: getKinveyUserAuthHeaders(),
+                success: deleteBooksSuccess,
+                error: handleAjaxError
+            });
+            function deleteBooksSuccess() {
+                showInfo("book deleted")
+                listBooks();
+            }
+        }
+
+        function showCreateBookView() {
+            $('#formCreateBook').trigger('reset');
+            showView('viewCreateBook');
+        }
+
+        function logoutUser() {
+            sessionStorage.clear();
+            $('#loggedInUser').text("");
+            showHideMenuLinks();
+            showView('viewHome');
+            showInfo('Logout successful.');
+        }
+
+        function registerUser() {
+            setTimeout(function(){ }, 3000);
+            let userData = {
+                username: $('#formRegister input[name=username]').val(),
+                password: $('#formRegister input[name=passwd]').val(),
+                profilePicture:$('#formRegister input[name=image]').val()
+            };
+            if (userData.username !== "" && userData.password !== "") {
+
+                $.ajax({
+                    method: "POST",
+                    url: kinveyBaseUrl + "user/" + kinveyAppKey + "/",
+                    headers: kinveyAppAuthHeaders,
+                    data: userData,
+                    success: registerSuccess,
+                    error: handleAjaxError
+                });
+            } else {
+                showError("Username AND Password should be filled")
+            }
+
+            function registerSuccess(userInfo) {
+
+                saveAuthInSession(userInfo);
+                showHideMenuLinks();
+                listBooks();
+                showInfo('User registration successful.');
+            }
+        }
+
+        function saveAuthInSession(userInfo) {
+            sessionStorage.setItem('authToken', userInfo._kmd.authtoken);
+            sessionStorage.setItem('userId', userInfo._id);
+
+            let username = userInfo.username;
+            $('#loggedInUser')
+                    .text("Welcome, " + username + "!")
+                    .append( $("<img>").attr("src",userInfo.profilePicture))
+
+
+        }
+
+        function handleAjaxError(response) {
+            let errorMsg = JSON.stringify(response);
+            if (response.readyState === 0)
+                errorMsg = "Cannot connect due to network error.";
+            if (response.responseJSON &&
+                    response.responseJSON.description)
+                errorMsg = response.responseJSON.description;
+            showError(errorMsg);
+        }
+
+        function showInfo(message) {
+            $('#infoBox').text(message);
+            $('#infoBox').show();
+            setTimeout(function () {
+                $('#infoBox').fadeOut();
+            }, 2000);
+        }
+
+        function showError(errorMsg) {
+            $('#errorBox').text("Error: " + errorMsg);
+            $('#errorBox').show();
+        }
+
+        function createBook() {
+            let bookData = {
+                book: $('#viewCreateBook input[name=title]').val(),
+                author: $('#viewCreateBook input[name=author]').val(),
+                description: $('#viewCreateBook textarea[name=descr]').val(),
+                price: $('#viewCreateBook input[name=price]').val()
+            };
+
+
+            if (bookData.book !== "" && bookData.author !== "" && bookData.description !== "" && bookData.price !== "") {
+
+                $.ajax({
+                    method: "POST",
+                    url: kinveyBaseUrl + "appdata/" + kinveyAppKey + "/books",
+                    headers: getKinveyUserAuthHeaders(),
+                    data: bookData,
+                    success: bookCreateSuccess,
+                    error: handleAjaxError
+                });
+            } else {
+                showError("Title,Author Description AND Price should be filled!")
+            }
+
+            function bookCreateSuccess() {
+                showHideMenuLinks();
+                listBooks();
+                showInfo('book added successfully.');
+            }
+        }
+
+        function loadBookForEdit(bookId) {
+            $.ajax({
+                method: "GET",
+                url: kinveyBookUrl = kinveyBaseUrl + "appdata/" +
+                        kinveyAppKey + "/books/" + bookId,
+                headers: getKinveyUserAuthHeaders(),
+                success: loadBookForEditSuccess,
+                error: handleAjaxError
+            });
+
+            function loadBookForEditSuccess(book) {
+                $('#formEditBook input[name=id]').val(book._id);
+                $('#formEditBook input[name=title]').val(book.book);
+                $('#formEditBook input[name=author]').val(book.author);
+                $('#formEditBook input[name=price]').val(book.price);
+                $('#formEditBook textarea[name=descr]').val(book.description);
+                showView('viewEditBook');
+            }
+        }
+
+        function editBook() {
+            let bookData = {
+                book: $('#formEditBook input[name=title]').val(),
+                author: $('#formEditBook input[name=author]').val(),
+                price: $('#formEditBook input[name=price]').val(),
+                description: $('#formEditBook textarea[name=descr]').val()
+            };
+            console.dir(bookData)
+            if (bookData.book !== "" && bookData.author !== "" && bookData.description !== "" && bookData.price !== "") {
+                $.ajax({
+                    method: "PUT",
+                    url: kinveyBaseUrl + "appdata/" + kinveyAppKey +
+                    "/books/" + $('#formEditBook input[name=id]').val(),
+                    headers: getKinveyUserAuthHeaders(),
+                    data: bookData,
+                    success: editBookSuccess,
+                    error: handleAjaxError
+                });
+
+            } else {
+                showError("Title,Author Description AND Price should be filled!")
+            }
+
+                function editBookSuccess(response) {
+                    alert("sux")
+                    listBooks();
+                    showInfo('Book edited.');
+                }
+            }
+
+        // Bind the navigation menu links
+        $("#linkHome").click(showHomeView);
+        $("#linkLogin").click(showLoginView);
+        $("#linkRegister").click(showRegisterView);
+        $("#linkListBooks").click(listBooks);
+        $("#linkCreateBook").click(showCreateBookView);
+        $("#linkLogout").click(logoutUser);
+        // Bind the form submit buttons
+        $("#buttonLoginUser").click(loginUser);
+        $("#buttonRegisterUser").click(registerUser);
+        $("#buttonCreateBook").click(createBook);
+        $("#buttonEditBook").click(editBook);
+        // Bind the info / error boxes: hide on click
+        $("#infoBox, #errorBox").click(function () {
+            $(this).fadeOut();
+        });
+        // Attach AJAX "loading" event listener
+        $(document).on({
+            ajaxStart: function () {
+                $("#loadingBox").show()
+            },
+            ajaxStop: function () {
+                $("#loadingBox").hide()
+            }
+        });
+        $("form").submit(function (e) {
+            e.preventDefault()
+        });
+    }
+</script>
+</body>
+</html>
